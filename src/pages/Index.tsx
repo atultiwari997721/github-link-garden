@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Header } from '@/components/Header';
 import { LinkCard } from '@/components/LinkCard';
@@ -31,7 +30,7 @@ const Index = () => {
     if (savedLinks) {
       setLinks(JSON.parse(savedLinks));
     } else {
-      // Add some sample links
+      // Add some sample links including random ones
       const sampleLinks: GitHubLink[] = [
         {
           id: '1',
@@ -52,6 +51,72 @@ const Index = () => {
           category: 'Backend',
           stars: 18,
           language: 'JavaScript',
+          isPrivate: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '3',
+          title: 'Atul\'s Portfolio',
+          url: 'https://atultiwari997721.github.io',
+          description: 'Personal portfolio website showcasing projects and skills',
+          category: 'Personal',
+          stars: 7,
+          language: 'HTML',
+          isPrivate: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '4',
+          title: 'Awesome ML Project',
+          url: 'https://github.com/datascientist/ml-classifier',
+          description: 'Machine learning classifier for image recognition tasks',
+          category: 'Machine Learning',
+          stars: 156,
+          language: 'Python',
+          isPrivate: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '5',
+          title: 'Mobile Game Engine',
+          url: 'https://github.com/gamedev/unity-engine',
+          description: 'Cross-platform mobile game engine built with Unity',
+          category: 'Mobile',
+          stars: 89,
+          language: 'C++',
+          isPrivate: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '6',
+          title: 'CLI Tool Collection',
+          url: 'https://github.com/clitools/dev-utils',
+          description: 'Collection of useful CLI tools for developers',
+          category: 'CLI Tools',
+          stars: 23,
+          language: 'Go',
+          isPrivate: false,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '7',
+          title: 'Private Work Project',
+          url: 'https://github.com/company/secret-project',
+          description: 'Internal company project for data processing',
+          category: 'Work',
+          stars: 0,
+          language: 'Python',
+          isPrivate: true,
+          createdAt: new Date().toISOString(),
+        },
+        {
+          id: '8',
+          title: 'Learning Rust',
+          url: 'https://github.com/learner/rust-journey',
+          description: 'My journey learning Rust programming language',
+          category: 'Learning',
+          stars: 5,
+          language: 'Rust',
           isPrivate: false,
           createdAt: new Date().toISOString(),
         }
