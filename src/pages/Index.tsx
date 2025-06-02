@@ -4,7 +4,7 @@ import { LinkCard } from '@/components/LinkCard';
 import { AddLinkForm } from '@/components/AddLinkForm';
 import { CategorySidebar } from '@/components/CategorySidebar';
 import { Button } from '@/components/ui/button';
-import { Plus, Github, Quiz } from 'lucide-react';
+import { Plus, Github, Brain } from 'lucide-react';
 
 export interface GitHubLink {
   id: string;
@@ -188,7 +188,7 @@ const Index = () => {
                   onClick={() => window.location.href = '/quiz-platform'}
                   className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
                 >
-                  <Quiz className="w-4 h-4 mr-2" />
+                  <Brain className="w-4 h-4 mr-2" />
                   AI Quiz Platform
                 </Button>
                 <Button 
