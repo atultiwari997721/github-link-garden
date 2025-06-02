@@ -4,7 +4,7 @@ import { LinkCard } from '@/components/LinkCard';
 import { AddLinkForm } from '@/components/AddLinkForm';
 import { CategorySidebar } from '@/components/CategorySidebar';
 import { Button } from '@/components/ui/button';
-import { Plus, Github } from 'lucide-react';
+import { Plus, Github, Quiz } from 'lucide-react';
 
 export interface GitHubLink {
   id: string;
@@ -183,13 +183,22 @@ const Index = () => {
                   Organize and manage your GitHub repositories and profiles
                 </p>
               </div>
-              <Button 
-                onClick={() => setShowAddForm(true)}
-                className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Link
-              </Button>
+              <div className="flex space-x-4">
+                <Button 
+                  onClick={() => window.location.href = '/quiz-platform'}
+                  className="bg-purple-600 hover:bg-purple-700 text-white shadow-lg"
+                >
+                  <Quiz className="w-4 h-4 mr-2" />
+                  AI Quiz Platform
+                </Button>
+                <Button 
+                  onClick={() => setShowAddForm(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Link
+                </Button>
+              </div>
             </div>
 
             {/* Stats */}
