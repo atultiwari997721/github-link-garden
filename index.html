@@ -1,24 +1,205 @@
+
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>github-link-garden</title>
-    <meta name="description" content="Lovable Generated Project" />
-    <meta name="author" content="Lovable" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Quiz Generator</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo-section">
+                        <div class="logo">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 12l2 2 4-4"/>
+                                <circle cx="12" cy="12" r="10"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1>AI Quiz Generator</h1>
+                            <p>Upload documents and generate smart quizzes</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Tabs -->
+                <div class="nav-tabs">
+                    <button class="nav-tab active" data-view="upload">
+                        📤 Upload Documents
+                        <span class="badge" id="documents-count">0</span>
+                    </button>
+                    <button class="nav-tab" data-view="generate">
+                        ⚡ Generate Quizzes
+                        <span class="badge" id="quizzes-count">0</span>
+                    </button>
+                    <button class="nav-tab" data-view="play">
+                        ▶️ Play Quiz
+                    </button>
+                </div>
+            </div>
+        </header>
 
-    <meta property="og:title" content="github-link-garden" />
-    <meta property="og:description" content="Lovable Generated Project" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+        <div class="container">
+            <!-- Upload View -->
+            <div id="upload-view" class="view active">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>📤 Upload Your Documents</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="upload-area" id="upload-area">
+                            <div class="upload-icon">📄</div>
+                            <h3 id="upload-title">Drop your document here</h3>
+                            <p>Upload text files (.txt) or PDF files (.pdf) to generate AI-powered quizzes</p>
+                            <button class="btn btn-primary" id="choose-file-btn">Choose File</button>
+                            <input type="file" id="file-input" accept=".txt,.pdf,text/plain,application/pdf" hidden>
+                        </div>
+                    </div>
+                </div>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+                <!-- Documents List -->
+                <div class="card" id="documents-card" style="display: none;">
+                    <div class="card-header">
+                        <h2>📚 Uploaded Documents</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="documents-grid" id="documents-grid"></div>
+                    </div>
+                </div>
+            </div>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+            <!-- Generate View -->
+            <div id="generate-view" class="view">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>⚡ Generate AI Quiz</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="form-group">
+                            <label>Select Document</label>
+                            <select id="document-select" class="select">
+                                <option value="">Choose a document</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="topic-group" style="display: none;">
+                            <label>Select Topic</label>
+                            <select id="topic-select" class="select">
+                                <option value="">Choose a topic</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary full-width" id="generate-quiz-btn" disabled>
+                            🎯 Generate Quiz
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Generated Quizzes -->
+                <div class="card" id="quizzes-card" style="display: none;">
+                    <div class="card-header">
+                        <h2>📝 Generated Quizzes</h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="quizzes-grid" id="quizzes-grid"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Play View -->
+            <div id="play-view" class="view">
+                <div class="quiz-header" id="quiz-header" style="display: none;">
+                    <button class="btn btn-ghost" id="back-btn">← Back to Quizzes</button>
+                    <div class="quiz-info">
+                        <h1 id="quiz-title"></h1>
+                        <p id="quiz-progress"></p>
+                    </div>
+                    <div class="quiz-topic" id="quiz-topic"></div>
+                </div>
+
+                <div class="progress-bar" id="progress-container" style="display: none;">
+                    <div class="progress" id="progress-bar"></div>
+                    <div class="progress-text">
+                        <span>Progress</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                </div>
+
+                <!-- Quiz Question -->
+                <div class="card" id="question-card" style="display: none;">
+                    <div class="card-header">
+                        <h2 id="question-text"></h2>
+                    </div>
+                    <div class="card-content">
+                        <div class="options" id="options-container"></div>
+                        <div class="explanation" id="explanation" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Quiz Controls -->
+                <div class="quiz-controls" id="quiz-controls" style="display: none;">
+                    <button class="btn btn-outline" id="prev-btn" disabled>Previous</button>
+                    <div class="controls-right">
+                        <button class="btn btn-outline" id="show-answer-btn" style="display: none;">Show Answer</button>
+                        <button class="btn btn-primary" id="next-btn" disabled>Next Question</button>
+                    </div>
+                </div>
+
+                <!-- Quiz Results -->
+                <div class="card" id="results-card" style="display: none;">
+                    <div class="card-header text-center">
+                        <div class="trophy">🏆</div>
+                        <h2>Quiz Completed!</h2>
+                    </div>
+                    <div class="card-content text-center">
+                        <div class="score-display">
+                            <div class="score" id="final-score">0%</div>
+                            <div class="score-badge" id="score-badge">Try Again!</div>
+                        </div>
+                        
+                        <div class="stats-grid">
+                            <div class="stat">
+                                <div class="stat-number" id="total-questions">0</div>
+                                <div class="stat-label">Total Questions</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number correct" id="correct-answers">0</div>
+                                <div class="stat-label">Correct</div>
+                            </div>
+                            <div class="stat">
+                                <div class="stat-number incorrect" id="incorrect-answers">0</div>
+                                <div class="stat-label">Incorrect</div>
+                            </div>
+                        </div>
+
+                        <div class="results-actions">
+                            <button class="btn btn-primary" id="restart-btn">🔄 Restart Quiz</button>
+                            <button class="btn btn-outline" id="back-to-quizzes-btn">← Back to Quizzes</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No Quiz Selected -->
+                <div class="card" id="no-quiz-card">
+                    <div class="card-content text-center">
+                        <div class="empty-icon">📝</div>
+                        <h3>No Quiz Selected</h3>
+                        <p>Generate a quiz first to start playing</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="script.js"></script>
+</body>
 </html>
