@@ -1,3 +1,4 @@
+
 // Global state
 let documents = [];
 let quizzes = [];
@@ -35,9 +36,10 @@ function setupEventListeners() {
         });
     });
 
-    // File upload - Fixed the button connection
+    // File upload - Fixed to prevent double triggering
     chooseFileBtn.addEventListener('click', (e) => {
         e.preventDefault();
+        e.stopPropagation();
         fileInput.click();
     });
     fileInput.addEventListener('change', handleFileSelect);
@@ -46,11 +48,13 @@ function setupEventListeners() {
     uploadArea.addEventListener('dragover', handleDragOver);
     uploadArea.addEventListener('dragleave', handleDragLeave);
     uploadArea.addEventListener('drop', handleDrop);
-    uploadArea.addEventListener('click', () => {
-        if (!chooseFileBtn.disabled) {
-            fileInput.click();
-        }
-    });
+    
+    // Remove the click listener from upload area to prevent double triggering
+    // uploadArea.addEventListener('click', () => {
+    //     if (!chooseFileBtn.disabled) {
+    //         fileInput.click();
+    //     }
+    // });
 
     // Quiz generation
     document.getElementById('document-select').addEventListener('change', handleDocumentSelect);
@@ -273,8 +277,11 @@ function handleDocumentSelect(e) {
         }
     } else {
         topicGroup.style.display = 'none';
+        topicSelect.innerHTML = '<option value="">Choose a topic</option>';
     }
     
+    // Reset topic selection when document changes
+    document.getElementById('topic-select').value = '';
     updateGenerateButton();
 }
 
@@ -286,8 +293,6 @@ function updateGenerateButton() {
     console.log('Updating generate button - Doc:', documentId, 'Topic:', topic);
     generateBtn.disabled = !documentId || !topic;
 }
-
-document.getElementById('topic-select').addEventListener('change', updateGenerateButton);
 
 async function handleGenerateQuiz() {
     const documentId = document.getElementById('document-select').value;
@@ -307,6 +312,7 @@ async function handleGenerateQuiz() {
     }
 
     const generateBtn = document.getElementById('generate-quiz-btn');
+    const originalText = generateBtn.innerHTML;
     
     generateBtn.disabled = true;
     generateBtn.innerHTML = '🔄 Generating Quiz...';
@@ -323,12 +329,18 @@ async function handleGenerateQuiz() {
         
         showToast('Quiz generated successfully', `Created a quiz with ${quiz.questions.length} questions about ${topic}.`, 'success');
         console.log('Quiz generated:', quiz);
+        
+        // Reset selections after successful generation
+        document.getElementById('document-select').value = '';
+        document.getElementById('topic-select').value = '';
+        document.getElementById('topic-group').style.display = 'none';
+        
     } catch (error) {
         console.error('Error generating quiz:', error);
         showToast('Generation failed', 'There was an error generating the quiz.', 'error');
     } finally {
         generateBtn.disabled = false;
-        generateBtn.innerHTML = '🎯 Generate Quiz';
+        generateBtn.innerHTML = originalText;
         updateGenerateButton(); // Re-check if button should be enabled
     }
 }
