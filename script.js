@@ -1,4 +1,3 @@
-
 // Global state
 let documents = [];
 let quizzes = [];
@@ -36,17 +35,26 @@ function setupEventListeners() {
         });
     });
 
-    // File upload
-    chooseFileBtn.addEventListener('click', () => fileInput.click());
+    // File upload - Fixed the button connection
+    chooseFileBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        fileInput.click();
+    });
     fileInput.addEventListener('change', handleFileSelect);
     
     // Drag and drop
     uploadArea.addEventListener('dragover', handleDragOver);
     uploadArea.addEventListener('dragleave', handleDragLeave);
     uploadArea.addEventListener('drop', handleDrop);
+    uploadArea.addEventListener('click', () => {
+        if (!chooseFileBtn.disabled) {
+            fileInput.click();
+        }
+    });
 
     // Quiz generation
     document.getElementById('document-select').addEventListener('change', handleDocumentSelect);
+    document.getElementById('topic-select').addEventListener('change', updateGenerateButton);
     document.getElementById('generate-quiz-btn').addEventListener('click', handleGenerateQuiz);
 
     // Quiz playing
@@ -100,10 +108,14 @@ function handleFileSelect(e) {
     const files = e.target.files;
     if (files && files.length > 0) {
         handleFileUpload(files[0]);
+        // Reset the input so the same file can be selected again
+        e.target.value = '';
     }
 }
 
 async function handleFileUpload(file) {
+    console.log('Uploading file:', file.name);
+    
     const isTextFile = file.type.includes('text') || file.name.endsWith('.txt');
     const isPDFFile = file.type === 'application/pdf' || file.name.endsWith('.pdf');
     
@@ -143,6 +155,7 @@ async function handleFileUpload(file) {
         updateCounts();
         
         showToast('Document uploaded successfully', `${file.name} has been processed and ${topics.length} topics were identified.`, 'success');
+        console.log('Document uploaded:', newDocument);
     } catch (error) {
         console.error('Error processing file:', error);
         showToast('Upload failed', error.message || 'There was an error processing your document.', 'error');
@@ -242,16 +255,18 @@ function updateCounts() {
     document.getElementById('quizzes-count').textContent = quizzes.length;
 }
 
-// Quiz generation
+// Quiz generation - Fixed the logic
 function handleDocumentSelect(e) {
     const documentId = e.target.value;
     const topicGroup = document.getElementById('topic-group');
     const topicSelect = document.getElementById('topic-select');
-    const generateBtn = document.getElementById('generate-quiz-btn');
+    
+    console.log('Document selected:', documentId);
     
     if (documentId) {
         const document = documents.find(d => d.id === documentId);
         if (document) {
+            console.log('Found document with topics:', document.topics);
             topicSelect.innerHTML = '<option value="">Choose a topic</option>' +
                 document.topics.map(topic => `<option value="${topic}">${topic}</option>`).join('');
             topicGroup.style.display = 'block';
@@ -268,6 +283,7 @@ function updateGenerateButton() {
     const topic = document.getElementById('topic-select').value;
     const generateBtn = document.getElementById('generate-quiz-btn');
     
+    console.log('Updating generate button - Doc:', documentId, 'Topic:', topic);
     generateBtn.disabled = !documentId || !topic;
 }
 
@@ -277,19 +293,27 @@ async function handleGenerateQuiz() {
     const documentId = document.getElementById('document-select').value;
     const topic = document.getElementById('topic-select').value;
     
+    console.log('Generating quiz for:', documentId, topic);
+    
     if (!documentId || !topic) {
         showToast('Selection required', 'Please select a document and topic first.', 'error');
         return;
     }
 
     const document = documents.find(d => d.id === documentId);
+    if (!document) {
+        showToast('Document not found', 'The selected document was not found.', 'error');
+        return;
+    }
+
     const generateBtn = document.getElementById('generate-quiz-btn');
     
     generateBtn.disabled = true;
     generateBtn.innerHTML = '🔄 Generating Quiz...';
     
     try {
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+        // Simulate API call delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
         
         const quiz = generateQuizQuestions(document, topic);
         quizzes.push(quiz);
@@ -298,12 +322,14 @@ async function handleGenerateQuiz() {
         updateCounts();
         
         showToast('Quiz generated successfully', `Created a quiz with ${quiz.questions.length} questions about ${topic}.`, 'success');
+        console.log('Quiz generated:', quiz);
     } catch (error) {
         console.error('Error generating quiz:', error);
         showToast('Generation failed', 'There was an error generating the quiz.', 'error');
     } finally {
         generateBtn.disabled = false;
         generateBtn.innerHTML = '🎯 Generate Quiz';
+        updateGenerateButton(); // Re-check if button should be enabled
     }
 }
 
