@@ -39,11 +39,43 @@ export const DocumentUpload = ({ documents, onDocumentUpload, onSelectDocument }
     return Array.from(topics).slice(0, 5); // Limit to 5 topics
   };
 
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    try {
+      // Dynamic import to avoid bundle size issues
+      const pdfjsLib = await import('pdfjs-dist');
+      
+      // Set worker source
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      
+      let fullText = '';
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        fullText += pageText + '\n';
+      }
+      
+      return fullText;
+    } catch (error) {
+      console.error('Error extracting PDF text:', error);
+      throw new Error('Failed to extract text from PDF');
+    }
+  };
+
   const handleFileUpload = async (file: File) => {
-    if (!file.type.includes('text') && !file.name.endsWith('.txt')) {
+    const isTextFile = file.type.includes('text') || file.name.endsWith('.txt');
+    const isPDFFile = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+    
+    if (!isTextFile && !isPDFFile) {
       toast({
         title: "Invalid file type",
-        description: "Please upload a text file (.txt)",
+        description: "Please upload a text file (.txt) or PDF file (.pdf)",
         variant: "destructive"
       });
       return;
@@ -52,7 +84,18 @@ export const DocumentUpload = ({ documents, onDocumentUpload, onSelectDocument }
     setIsProcessing(true);
     
     try {
-      const content = await file.text();
+      let content: string;
+      
+      if (isPDFFile) {
+        content = await extractTextFromPDF(file);
+      } else {
+        content = await file.text();
+      }
+      
+      if (!content.trim()) {
+        throw new Error('No readable text found in the document');
+      }
+      
       const topics = extractTopicsFromContent(content);
       
       const newDocument: Document = {
@@ -73,7 +116,7 @@ export const DocumentUpload = ({ documents, onDocumentUpload, onSelectDocument }
       console.error('Error processing file:', error);
       toast({
         title: "Upload failed",
-        description: "There was an error processing your document.",
+        description: error instanceof Error ? error.message : "There was an error processing your document.",
         variant: "destructive"
       });
     } finally {
@@ -125,7 +168,7 @@ export const DocumentUpload = ({ documents, onDocumentUpload, onSelectDocument }
               {isProcessing ? 'Processing document...' : 'Drop your document here'}
             </h3>
             <p className="text-white/70 mb-4">
-              Upload text files (.txt) to generate AI-powered quizzes
+              Upload text files (.txt) or PDF files (.pdf) to generate AI-powered quizzes
             </p>
             <Button
               onClick={() => fileInputRef.current?.click()}
@@ -137,7 +180,7 @@ export const DocumentUpload = ({ documents, onDocumentUpload, onSelectDocument }
             <input
               ref={fileInputRef}
               type="file"
-              accept=".txt,text/plain"
+              accept=".txt,.pdf,text/plain,application/pdf"
               onChange={handleFileSelect}
               className="hidden"
             />
