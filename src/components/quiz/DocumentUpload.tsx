@@ -1,4 +1,3 @@
-
 import { useState, useRef } from 'react';
 import { Upload, FileText, Trash2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -44,8 +43,9 @@ export const DocumentUpload = ({ documents, onDocumentUpload, onSelectDocument }
       // Dynamic import to avoid bundle size issues
       const pdfjsLib = await import('pdfjs-dist');
       
-      // Set worker source
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      // Use a different approach for worker setup
+      const workerUrl = new URL('pdfjs-dist/build/pdf.worker.mjs', import.meta.url);
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl.toString();
       
       const arrayBuffer = await file.arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
